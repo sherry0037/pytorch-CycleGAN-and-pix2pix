@@ -22,7 +22,7 @@ class BaseDataset(data.Dataset):
 
 
 def get_transform(opt):
-    transform_list = []
+    transform_list = [transforms.ToPILImage()]
     if opt.resize_or_crop == 'resize_and_crop':
         osize = [opt.loadSize, opt.loadSize]
         transform_list.append(transforms.Resize(osize, Image.BICUBIC))

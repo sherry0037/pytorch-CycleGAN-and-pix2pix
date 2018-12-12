@@ -29,6 +29,8 @@ if __name__ == '__main__':
             total_steps += opt.batch_size
             epoch_iter += opt.batch_size
             model.set_input(data)
+            #print("A", data['A'].shape)
+            #print("B", data['B'].shape)
             model.optimize_parameters()
 
             if total_steps % opt.display_freq == 0:

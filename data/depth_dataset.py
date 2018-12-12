@@ -1,7 +1,7 @@
 ### Copyright (C) 2017 NVIDIA Corporation. All rights reserved. 
 ### Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 import os.path
-from data.base_dataset import BaseDataset
+from data.base_dataset import BaseDataset, get_transform
 import h5py
 import numpy as np
 import torch
@@ -24,6 +24,8 @@ class DepthDataset(BaseDataset):
                 self.data_paths.append(path)
                 self.dataset_size += 1
 
+        self.transform = get_transform(opt)
+
     def __getitem__(self, index):
         data_path = self.data_paths[index]
         try:
@@ -33,22 +35,26 @@ class DepthDataset(BaseDataset):
         rgb = np.array(h5f['rgb'])
         depth = np.array(h5f['depth'])
         depth = np.dstack((depth, depth, depth))
-        if self.opt.sparse:
+        """if self.opt.sparse:
             rgbd = self.create_sparse_depth(rgb, depth)
             rgbd = np.transpose(rgbd, (2, 0, 1))
             #print("rgbd", rgbd.shape)
             rgbd = torch.tensor(rgbd, dtype=torch.float)
+        """
         rgb = torch.tensor(rgb, dtype=torch.float)
         depth = np.transpose(depth, (2, 0, 1))  # chanel first
         depth = torch.tensor(depth, dtype=torch.float)
+        rgb = self.transform(rgb)
+        depth = self.transform(depth)
         input_dict = {'A': rgb, 'B': depth,
                       'A_paths': data_path, 'B_paths': data_path}
-        if self.opt.sparse:
+        """if self.opt.sparse:
             input_dict['A'] = rgbd
+        """
         return input_dict
 
     def __len__(self):
-        return len(self.data_paths) // self.opt.batchSize * self.opt.batchSize
+        return len(self.data_paths) // self.opt.batch_size * self.opt.batch_size
 
     def name(self):
         return 'DepthDataset'
