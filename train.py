@@ -44,6 +44,10 @@ if __name__ == '__main__':
                 if opt.display_id > 0:
                     visualizer.plot_current_losses(epoch, float(epoch_iter) / dataset_size, opt, losses)
 
+                errors = model.get_depth_errors()
+                for k, v in errors:
+                    print (k, v)
+
             if total_steps % opt.save_latest_freq == 0:
                 print('saving the latest model (epoch %d, total_steps %d)' % (epoch, total_steps))
                 save_suffix = 'iter_%d' % total_steps if opt.save_by_iter else 'latest'

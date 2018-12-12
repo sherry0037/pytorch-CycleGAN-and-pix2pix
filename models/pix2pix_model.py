@@ -2,6 +2,7 @@ import torch
 from util.image_pool import ImagePool
 from .base_model import BaseModel
 from . import networks
+from metrics import Result
 
 
 class Pix2PixModel(BaseModel):
@@ -109,3 +110,8 @@ class Pix2PixModel(BaseModel):
         self.optimizer_G.zero_grad()
         self.backward_G()
         self.optimizer_G.step()
+
+    def get_depth_errors(self):
+        result = Result()
+        result.evaluate(self.real_B, self.fake_B)
+        self.depth_loss = result.to_dict()
