@@ -3,6 +3,7 @@ import torch
 import numpy as np
 from PIL import Image
 import os
+import png
 
 
 # Converts a Tensor into an image array (numpy)
@@ -32,9 +33,15 @@ def diagnose_network(net, name='network'):
     print(mean)
 
 
-def save_image(image_numpy, image_path):
-    image_pil = Image.fromarray(image_numpy)
-    image_pil.save(image_path)
+def save_image(image_numpy, image_path, save_rgb=False):
+    #image_pil = Image.fromarray(image_numpy)
+    #image_pil.save(image_path)
+    if not save_rgb:
+        image_pil = png.fromarray(image_numpy, 'RGBA;8')
+        image_pil.save(image_path)
+    else:
+        img = Image.fromarray(image_numpy.astype('uint8'))
+        img.save(image_path)
 
 
 def print_numpy(x, val=True, shp=False):
