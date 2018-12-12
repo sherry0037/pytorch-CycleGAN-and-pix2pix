@@ -6,6 +6,15 @@ from util.visualizer import Visualizer
 
 if __name__ == '__main__':
     opt = TrainOptions().parse()
+    iter_path = os.path.join(opt.checkpoints_dir, opt.name, 'iter.txt')
+    if opt.continue_train:
+        try:
+            start_epoch, epoch_iter = np.loadtxt(iter_path, delimiter=',', dtype=int)
+        except:
+            start_epoch, epoch_iter = 1, 0
+        print('Resuming from epoch %d at iteration %d' % (start_epoch, epoch_iter))
+    else:
+        start_epoch, epoch_iter = 1, 0
     data_loader = CreateDataLoader(opt)
     dataset = data_loader.load_data()
     dataset_size = len(data_loader)
@@ -15,6 +24,10 @@ if __name__ == '__main__':
     model.setup(opt)
     visualizer = Visualizer(opt)
     total_steps = 0
+    total_steps = (start_epoch - 1) * dataset_size + epoch_iter
+    display_delta = total_steps % opt.display_freq
+    print_delta = total_steps % opt.print_freq
+    save_delta = total_steps % opt.save_latest_freq
 
     for epoch in range(opt.epoch_count, opt.niter + opt.niter_decay + 1):
         epoch_start_time = time.time()
@@ -33,11 +46,11 @@ if __name__ == '__main__':
             #print("B", data['B'].shape)
             model.optimize_parameters()
 
-            if total_steps % opt.display_freq == 0:
+            if total_steps % opt.display_freq == display_delta:
                 save_result = total_steps % opt.update_html_freq == 0
                 visualizer.display_current_results(model.get_current_visuals(), epoch, save_result)
 
-            if total_steps % opt.print_freq == 0:
+            if total_steps % opt.print_freq == print_delta:
                 losses = model.get_current_losses()
                 t = (time.time() - iter_start_time) / opt.batch_size
                 visualizer.print_current_losses(epoch, epoch_iter, losses, t, t_data)
@@ -48,7 +61,7 @@ if __name__ == '__main__':
                 for k, v in errors:
                     print (k, v)
 
-            if total_steps % opt.save_latest_freq == 0:
+            if total_steps % opt.save_latest_freq == save_delta:
                 print('saving the latest model (epoch %d, total_steps %d)' % (epoch, total_steps))
                 save_suffix = 'iter_%d' % total_steps if opt.save_by_iter else 'latest'
                 model.save_networks(save_suffix)
