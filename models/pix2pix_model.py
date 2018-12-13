@@ -114,4 +114,4 @@ class Pix2PixModel(BaseModel):
     def get_depth_errors(self):
         result = Result()
         result.evaluate(self.real_B, self.fake_B)
-        self.depth_loss = result.to_dict()
+        return result.to_dict()

@@ -121,7 +121,8 @@ class Visualizer():
         if self.use_html and (save_result or not self.saved):  # save images to a html file
             self.saved = True
             for label, image in visuals.items():
-                #image_numpy = util.tensor2im(image)
+                image_numpy = util.tensor2im(image)
+                #print(image.shape, "image")
                 img_path = os.path.join(self.img_dir, 'epoch%.3d_%s.png' % (epoch, label))
                 util.save_image(image_numpy, img_path, save_rgb=label=='A')
             # update website

@@ -1,15 +1,20 @@
+import os
 import time
 from options.train_options import TrainOptions
 from data import CreateDataLoader
 from models import create_model
 from util.visualizer import Visualizer
+import numpy as np
 
 if __name__ == '__main__':
     opt = TrainOptions().parse()
     iter_path = os.path.join(opt.checkpoints_dir, opt.name, 'iter.txt')
     if opt.continue_train:
         try:
+            print("*"*20)
             start_epoch, epoch_iter = np.loadtxt(iter_path, delimiter=',', dtype=int)
+            print(start_epoch)
+            print(epoch_iter)
         except:
             start_epoch, epoch_iter = 1, 0
         print('Resuming from epoch %d at iteration %d' % (start_epoch, epoch_iter))
@@ -57,9 +62,9 @@ if __name__ == '__main__':
                 if opt.display_id > 0:
                     visualizer.plot_current_losses(epoch, float(epoch_iter) / dataset_size, opt, losses)
 
-                errors = model.get_depth_errors()
-                for k, v in errors:
-                    print (k, v)
+                #errors = model.get_depth_errors()
+                #for k, v in errors.items():
+                #    print (k, v)
 
             if total_steps % opt.save_latest_freq == save_delta:
                 print('saving the latest model (epoch %d, total_steps %d)' % (epoch, total_steps))
@@ -71,6 +76,7 @@ if __name__ == '__main__':
             print('saving the model at the end of epoch %d, iters %d' % (epoch, total_steps))
             model.save_networks('latest')
             model.save_networks(epoch)
+            np.savetxt(iter_path, (epoch, epoch_iter), delimiter=',', fmt='%d')
 
         print('End of epoch %d / %d \t Time Taken: %d sec' %
               (epoch, opt.niter + opt.niter_decay, time.time() - epoch_start_time))
