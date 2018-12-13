@@ -4,6 +4,8 @@ from data import CreateDataLoader
 from models import create_model
 from util.visualizer import save_images
 from util import html
+from metrics import AverageMeter
+import json
 
 
 if __name__ == '__main__':
@@ -26,6 +28,9 @@ if __name__ == '__main__':
     # CycleGAN: It should not affect CycleGAN as CycleGAN uses instancenorm without dropout.
     if opt.eval:
         model.eval()
+    average_meter = AverageMeter()
+    dataset_size = len(dataset)
+    errors = dict()
     for i, data in enumerate(dataset):
         if i >= opt.num_test:
             break
@@ -36,5 +41,19 @@ if __name__ == '__main__':
         if i % 5 == 0:
             print('processing (%04d)-th image... %s' % (i, img_path))
         save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio, width=opt.display_winsize)
+
+        result = model.get_depth_errors()
+        average_meter.update(result, 0, 0, dataset_size)
+        errors[i] = result.to_dict()
+
+
     # save the website
     webpage.save()
+
+    avg = average_meter.average()
+    errors['average'] = avg.to_dict()
+    errorDict = {'errors': errors}
+    error_dir = os.path.join(opt.results_dir, 'loss_%s.txt' % opt.name)
+    with open(error_dir, 'w') as file:
+        file.write(json.dumps(errorDict))  # use `json.loads` to do the revers
+    print("Finish writing at ", error_dir)
