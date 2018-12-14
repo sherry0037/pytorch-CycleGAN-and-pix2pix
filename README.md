@@ -1,6 +1,8 @@
 <img src='imgs/horse2zebra.gif' align="right" width=384>
 
 <br><br><br>
+# 训练
+python train.py --dataroot ../pix2pixHD/datasets/NYUdepth --name nyudepth --model pix2pix --dataset_mode depth --display_id 0
 
 # CycleGAN and pix2pix in PyTorch
 
